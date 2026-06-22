@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: anime-rag-assistant
+    runtime: python
+    pythonVersion: 3.12
+    
+    # Build command
+    buildCommand: pip install -r requirements.txt
+    
+    # Start command
+    startCommand: streamlit run app.py --server.port=10000 --server.address=0.0.0.0
+    
+    # Environment
+    envVars:
+      - key: GOOGLE_API_KEY
+        scope: build,runtime
+        sync: false
+      - key: MAL_CLIENT_ID
+        scope: build,runtime
+        sync: false
+    
+    # Port and public path
+    port: 10000
+    staticPublicPath: /
+    
+    # Persistent disk for ChromaDB vector store
+    disk:
+      name: chroma-data
+      mountPath: /var/data/chroma
