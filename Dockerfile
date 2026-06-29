@@ -12,4 +12,3 @@ EXPOSE 8000
 WORKDIR /app/src
 
 CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
-Save the file, then run:
