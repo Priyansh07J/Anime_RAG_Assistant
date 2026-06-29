@@ -18,11 +18,21 @@ TOP_K = 5  # how many anime chunks to retrieve per query
 
 
 def retrieve_anime(query: str, k: int = TOP_K):
-    """Returns the top-k most relevant anime chunks for a query,
-    each with similarity score and source metadata."""
+    """Returns the top-k most relevant anime for a query, each with
+    similarity score and source metadata. Over-fetches and deduplicates
+    by title first, since a single anime can otherwise show up as
+    multiple chunks and crowd out other relevant results."""
     vectorstore = get_vectorstore()
-    results = vectorstore.similarity_search_with_score(query, k=k)
-    return results
+    raw_results = vectorstore.similarity_search_with_score(query, k=k * 4)
+
+    seen_titles = {}
+    for doc, score in raw_results:
+        title = doc.metadata.get("title", "Unknown")
+        if title not in seen_titles or score < seen_titles[title][1]:
+            seen_titles[title] = (doc, score)
+
+    deduped = sorted(seen_titles.values(), key=lambda x: x[1])  # lower score = more similar
+    return deduped[:k]
 
 
 def format_context(results) -> str:
@@ -37,22 +47,39 @@ def generate_answer(query: str, results) -> str:
     """Sends retrieved anime context + the user's question to Gemini
     and returns a grounded, explainable recommendation."""
     context = format_context(results)
-
     llm = ChatGoogleGenerativeAI(model=CHAT_MODEL, temperature=0.4)
+    prompt = _build_prompt(query, context)
+    response = llm.invoke(prompt)
+    return response.content
 
-    prompt = (
+
+def generate_answer_stream(query: str, results):
+    """Same prompt/model as generate_answer, but yields text chunks as
+    they arrive from Gemini instead of waiting for the full response.
+    Used by the streaming /api/chat endpoint so the UI can show tokens
+    as they're generated rather than one long blocking wait."""
+    context = format_context(results)
+    llm = ChatGoogleGenerativeAI(model=CHAT_MODEL, temperature=0.4)
+    prompt = _build_prompt(query, context)
+
+    for chunk in llm.stream(prompt):
+        if chunk.content:
+            yield chunk.content
+
+
+def _build_prompt(query: str, context: str) -> str:
+    return (
         "You are an anime recommendation assistant. Answer the user's question "
         "using ONLY the anime information provided below. Always mention the "
         "specific anime titles you're recommending and briefly explain why each "
         "one fits the request. If none of the provided anime fit well, say so "
-        "honestly instead of forcing a recommendation.\n\n"
+        "honestly instead of forcing a recommendation. Keep your answer focused "
+        "and concise — a short paragraph or a few short bullet points, not an "
+        "essay.\n\n"
         f"ANIME DATA:\n{context}\n\n"
         f"USER QUESTION: {query}\n\n"
         "ANSWER:"
     )
-
-    response = llm.invoke(prompt)
-    return response.content
 
 
 def ask(query: str, k: int = TOP_K) -> dict:
@@ -79,17 +106,3 @@ if __name__ == "__main__":
     result = ask(test_query)
     print("ANSWER:\n", result["answer"])
     print("\nSOURCES:", result["sources"])
-
-def retrieve_anime(query: str, k: int = TOP_K):
-    vectorstore = get_vectorstore()
-    raw_results = vectorstore.similarity_search_with_score(query, k=k * 4)
-    
-    # Deduplicate by title — keep only the best-scoring chunk per anime
-    seen_titles = {}
-    for doc, score in raw_results:
-        title = doc.metadata.get("title", "Unknown")
-        if title not in seen_titles or score < seen_titles[title][1]:
-            seen_titles[title] = (doc, score)
-    
-    deduped = sorted(seen_titles.values(), key=lambda x: x[1])  # lower score = more similar
-    return deduped[:k]

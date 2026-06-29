@@ -1,0 +1,575 @@
+/* ===== Design tokens ===== */
+:root {
+  --ink: #0F0E13;
+  --ink-raised: #16141C;
+  --parchment: #F5F1E8;
+  --parchment-dim: #8B8694;
+  --violet: #7C3AED;
+  --violet-dim: #5B2FB8;
+  --coral: #E8485B;
+  --card-surface: #1E1B24;
+  --card-border: #2E2A38;
+
+  --font-display: "Source Serif 4", "Georgia", serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+
+  --radius-soft: 18px;
+  --radius-pill: 999px;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--ink);
+  color: var(--parchment);
+  font-family: var(--font-body);
+}
+
+body {
+  background-image:
+    radial-gradient(circle at 20% -10%, rgba(124, 58, 237, 0.10), transparent 40%),
+    radial-gradient(circle at 90% 10%, rgba(232, 72, 91, 0.06), transparent 35%);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--violet);
+  color: var(--parchment);
+}
+
+/* Visible keyboard focus, kept even when we style away default outlines */
+:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ===== Loading screen — the signature element ===== */
+.loading-screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  text-align: center;
+  padding: 24px;
+}
+
+.stamp-wrap {
+  width: 120px;
+  height: 120px;
+}
+
+.stamp-seal {
+  animation: stamp-press 1.8s cubic-bezier(.36,1.7,.4,1) infinite;
+  transform-origin: center;
+}
+
+.stamp-ring {
+  fill: none;
+  stroke: var(--coral);
+  stroke-width: 3;
+  opacity: 0.85;
+}
+
+.stamp-ring-inner {
+  fill: none;
+  stroke: var(--coral);
+  stroke-width: 1.5;
+  opacity: 0.5;
+}
+
+.stamp-glyph {
+  font-family: var(--font-display);
+  font-size: 40px;
+  fill: var(--coral);
+  font-weight: 700;
+}
+
+.stamp-subtext {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  fill: var(--parchment-dim);
+}
+
+@keyframes stamp-press {
+  0%   { transform: scale(1) rotate(-1deg); opacity: 0.4; }
+  8%   { transform: scale(1.08) rotate(0deg); opacity: 1; }
+  16%  { transform: scale(0.98) rotate(0.5deg); opacity: 1; }
+  30%  { transform: scale(1) rotate(0deg); opacity: 0.85; }
+  100% { transform: scale(1) rotate(-1deg); opacity: 0.4; }
+}
+
+.loading-line {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--parchment-dim);
+  min-height: 20px;
+  animation: fade-in 0.4s ease;
+  max-width: 320px;
+}
+
+.loading-elapsed {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--card-border);
+  letter-spacing: 0.05em;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== App viewport + side art ===== */
+.app-viewport {
+  display: flex;
+  height: 100vh;
+  justify-content: center;
+}
+
+.side-art {
+  flex: 1;
+  min-width: 0;
+  max-width: 260px;
+  display: none;
+  align-items: flex-end;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.side-art-left {
+  justify-content: flex-end;
+}
+
+.side-art-right {
+  justify-content: flex-start;
+}
+
+@media (min-width: 1100px) {
+  .side-art {
+    display: flex;
+  }
+}
+
+.ink-figure {
+  height: 86vh;
+  max-height: 720px;
+}
+
+.ink-figure-flip {
+  transform: scaleX(-1);
+}
+
+.ink-body path {
+  fill: var(--ink-raised);
+  stroke: var(--card-border);
+  stroke-width: 1;
+}
+
+.ink-hair {
+  fill: var(--ink-raised);
+}
+
+.ink-particles path {
+  fill: var(--card-border);
+  opacity: 0.6;
+}
+
+/* ===== App shell ===== */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  max-width: 720px;
+  flex-shrink: 0;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.app-wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.app-wordmark-glyph {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--coral);
+}
+
+.app-wordmark-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--parchment);
+  letter-spacing: 0.01em;
+}
+
+.status-dot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--parchment-dim);
+  text-transform: uppercase;
+}
+
+.status-dot-light {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--parchment-dim);
+}
+
+.status-dot-live .status-dot-light {
+  background: #4ADE80;
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+}
+
+.status-dot-waking .status-dot-light {
+  background: var(--coral);
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.app-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+/* ===== Chat window ===== */
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.chat-thread {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.empty-state {
+  margin: auto 0;
+  text-align: center;
+  padding: 0 12px;
+}
+
+.empty-state-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.empty-state-sub {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--parchment-dim);
+  max-width: 380px;
+  margin: 0 auto 22px;
+  line-height: 1.5;
+}
+
+.suggested-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.prompt-chip {
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
+  color: var(--parchment);
+  border-radius: var(--radius-pill);
+  padding: 9px 16px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.prompt-chip:hover {
+  border-color: var(--violet);
+  background: var(--ink-raised);
+}
+
+/* ===== Messages ===== */
+.message-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 100%;
+}
+
+.message-row-user {
+  align-items: flex-end;
+}
+
+.message-bubble {
+  font-size: 15px;
+  line-height: 1.55;
+  max-width: 85%;
+}
+
+.message-bubble p {
+  margin: 0;
+}
+
+.message-bubble-user {
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-soft);
+  padding: 12px 16px;
+}
+
+.message-bubble-assistant {
+  padding: 2px 0;
+}
+
+.message-error {
+  color: var(--coral);
+}
+
+.message-bubble-thinking {
+  display: flex;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+.thinking-dots {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.thinking-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--parchment-dim);
+  animation: thinking-bounce 1.2s ease-in-out infinite;
+}
+
+.thinking-dot:nth-child(2) { animation-delay: 0.15s; }
+.thinking-dot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes thinking-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+
+.caret {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  background: var(--violet);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: caret-blink 0.9s step-end infinite;
+}
+
+@keyframes caret-blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+
+/* ===== Source cards ===== */
+.sources-block {
+  margin-top: 2px;
+}
+
+.sources-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--parchment-dim);
+  margin-bottom: 10px;
+}
+
+.sources-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: none; /* Firefox */
+}
+
+.sources-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Edge, Safari */
+}
+
+.anime-card {
+  flex: 0 0 150px;
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-soft);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.anime-card-art {
+  width: 100%;
+  height: 200px;
+  background: var(--ink-raised);
+}
+
+.anime-card-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.anime-card-art-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--card-border);
+}
+
+.anime-card-body {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.anime-card-title {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.anime-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--parchment-dim);
+}
+
+.anime-card-score {
+  color: var(--coral);
+  font-weight: 600;
+}
+
+.anime-card-genres {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.anime-card-evidence {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--violet);
+  letter-spacing: 0.03em;
+}
+
+/* ===== Input bar ===== */
+.chat-input-bar {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--card-border);
+}
+
+.chat-input-bar input {
+  flex: 1;
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-pill);
+  padding: 12px 18px;
+  color: var(--parchment);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.chat-input-bar input:focus {
+  border-color: var(--violet);
+}
+
+.chat-input-bar input::placeholder {
+  color: var(--parchment-dim);
+}
+
+.chat-input-bar button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: var(--violet);
+  color: var(--parchment);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.chat-input-bar button:hover:not(:disabled) {
+  background: var(--violet-dim);
+}
+
+.chat-input-bar button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 480px) {
+  .app-shell { max-width: 100%; }
+  .anime-card { flex: 0 0 130px; }
+  .anime-card-art { height: 170px; }
+}
